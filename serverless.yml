@@ -1,0 +1,86 @@
+service: 'ignite-serverless-challenge'
+frameworkVersion: '3'
+
+provider: 
+  name: aws
+  runtime: 'nodejs14.x'
+  architecture: 'arm64'
+  apiGateway: 
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+  environment: 
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
+    NODE_OPTIONS: '--enable-source-maps --stack-trace-limit=1000'
+  iamRoleStatements: 
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource: 
+        - "*"
+
+plugins: 
+  - serverless-esbuild
+  - serverless-dynamodb-local
+  - serverless-offline
+
+functions: 
+  new-todo:
+    handler: 'src/functions/todos.post'
+    events: 
+      - httpApi: 'POST /todos/{userId}'
+  get-todos: 
+    handler: 'src/functions/todos.get'
+    events:
+      - httpApi: 'GET /todos/{userId}'
+
+package: 
+  individually: true 
+custom: 
+  esbuild: 
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude: 
+      - '*'
+    target: 'node14'
+    define: 
+      require.resolve: undefined
+    platform: 'node'
+    concurrency: 10
+  dynamodb:
+    stages: 
+      - dev
+      - local
+    start: 
+      port: 8000
+      inMemory: true
+      migrate: true
+
+resources: 
+  Resources:
+    todosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: todosTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: 'S'
+          - AttributeName: userId
+            AttributeType: 'S'
+        KeySchema:
+          - AttributeName: id
+            KeyType: 'HASH'
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: 'ALL'
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+

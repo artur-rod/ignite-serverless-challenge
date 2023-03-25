@@ -3,7 +3,6 @@
 Challenge from the Ignite NodeJS (Rocketseat Bootcamp).
 
 ## Challenge
----
 ### Create 2 serverless functions:
 1. POST ``/todos/{userId}``
 2. GET ``/todos/{userId}``
@@ -22,7 +21,7 @@ Challenge from the Ignite NodeJS (Rocketseat Bootcamp).
 ````
 
 * GET ``/todos/{userId}`` - This route receive an user id from the path and must return all the ToDos created by the user having the user id.
----
+
 ## Running the project
 If you want to test this project, is very simple, Just follow the next steps:
 
